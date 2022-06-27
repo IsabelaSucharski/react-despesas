@@ -1,8 +1,22 @@
 import { Despesas } from "./Despesas";
-
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Redirect,
+} from "react-router-dom";
 
 function App() {
-  return <Despesas />;
+  return (
+    <Router>
+      <Switch>
+        <Route path="/despesas/:mes">
+          <Despesas />;
+        </Route>
+        <Redirect to={{ pathname: "/despesas/2021-03" }} />
+      </Switch>
+    </Router>
+  );
 }
 
 export default App;

@@ -1,15 +1,10 @@
-import { getDespesas, getDespesasMes, IDespesas } from "./backend";
-import {
-  Select,
-  Box,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  NativeSelect,
-} from "@material-ui/core";
+/* eslint-disable react-hooks/exhaustive-deps */
+import { getDespesasMes } from "./backend";
+import { Box, FormControl, InputLabel, NativeSelect } from "@material-ui/core";
 import { meses, ano, formatNumbers } from "../helpers";
 import { useEffect, useState } from "react";
 import { TableDespesas } from "./TableDespesas";
+import { useParams, useHistory } from "react-router-dom";
 
 interface IAno {
   ano: string;
@@ -22,8 +17,13 @@ interface IMes {
 }
 
 export function Despesas() {
-  const [selectedAno, setSelectedAno] = useState("2021");
-  const [selectedMes, setSelectedMes] = useState("3");
+  const { mes } = useParams<{ mes: string }>();
+  let campos = mes.split("-");
+
+  let history = useHistory();
+
+  const [selectedAno, setSelectedAno] = useState(campos[0]);
+  const [selectedMes, setSelectedMes] = useState(campos[1].split("0")[1]);
   const [despesaTotal, setDespesaTotal] = useState(0);
   const [listAno, setListAno] = useState<IAno[]>([]);
   const [listMes, setListMes] = useState<IMes[]>([]);
@@ -32,6 +32,10 @@ export function Despesas() {
   useEffect(() => {
     setListAno(ano);
     setListMes(meses);
+
+    getDespesasMes(mes).then((res) => {
+      setDespesasMes(res);
+    });
   }, []);
 
   const toggleAno = (e: any) => {
@@ -42,6 +46,7 @@ export function Despesas() {
     setSelectedMes(e.target.value);
     setDespesasMes([]);
     setDespesaTotal(0);
+    history.push(`${selectedAno + "-0" + e.target.value}`);
     handleDespesasMes(selectedAno, e.target.value);
   };
 
@@ -54,19 +59,12 @@ export function Despesas() {
 
   const handleDespesasTotal = () => {
     let soma = 0;
-    despesasMes.map((d) => {
-      for (let i in d) {
-        soma += d.valor;
-      }
-      return soma;
+    despesasMes.filter(({ valor }) => {
+      soma += valor;
     });
 
     setDespesaTotal(soma);
   };
-
-  useEffect(() => {
-    handleDespesasMes(selectedAno, selectedMes);
-  }, []);
 
   useEffect(() => {
     handleDespesasTotal();
