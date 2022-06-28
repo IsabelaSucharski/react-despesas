@@ -20,8 +20,6 @@ export function getDespesas(): Promise<IDespesas> {
 }
 
 export function getDespesasMes(mes: string) {
-  console.log(mes);
-
   return fetch(`http://localhost:3001/despesas?mes=${mes}&_sort=dia`).then((resp) => {
     return resp.json();
   });

@@ -1,57 +1,41 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { getDespesasMes } from "./backend";
-import { Box, FormControl, InputLabel, NativeSelect } from "@material-ui/core";
-import { meses, ano, formatNumbers } from "../helpers";
+import { Box, Container } from "@material-ui/core";
+import { formatNumbers } from "../helpers";
 import { useEffect, useState } from "react";
 import { TableDespesas } from "./TableDespesas";
 import { useParams, useHistory } from "react-router-dom";
-
-interface IAno {
-  ano: string;
-  id: number;
-}
-
-interface IMes {
-  mes: string;
-  id: number;
-}
+import { SelectedAnoMes } from "./SelectAnoMes";
 
 export function Despesas() {
-  const { mes } = useParams<{ mes: string }>();
-  let campos = mes.split("-");
+  const { anoMes } = useParams<{ anoMes: string }>();
+  let campos = anoMes.split("-");
 
   let history = useHistory();
 
-  const [selectedAno, setSelectedAno] = useState(campos[0]);
-  const [selectedMes, setSelectedMes] = useState(campos[1].split("0")[1]);
+  // const [selectedAno, setSelectedAno] = useState(campos[0]);
+  // const [selectedMes, setSelectedMes] = useState(campos[1].split("0")[1]);
   const [despesaTotal, setDespesaTotal] = useState(0);
-  const [listAno, setListAno] = useState<IAno[]>([]);
-  const [listMes, setListMes] = useState<IMes[]>([]);
   const [despesasMes, setDespesasMes] = useState<any[]>([]);
 
   useEffect(() => {
-    setListAno(ano);
-    setListMes(meses);
-
-    getDespesasMes(mes).then((res) => {
-      setDespesasMes(res);
-    });
+    getDespesasMes(anoMes).then(setDespesasMes);
   }, []);
 
-  const toggleAno = (e: any) => {
-    setSelectedAno(e.target.value);
-  };
-
   const toggleMes = (e: any) => {
-    setSelectedMes(e.target.value);
     setDespesasMes([]);
     setDespesaTotal(0);
-    history.push(`${selectedAno + "-0" + e.target.value}`);
-    handleDespesasMes(selectedAno, e.target.value);
+
+    e.target.value > 9
+      ? history.push(`${campos[0] + "-" + e.target.value}`)
+      : history.push(`${campos[0] + "-0" + e.target.value}`);
+    handleDespesasMes(campos[0], e.target.value);
   };
 
-  const handleDespesasMes = async (ano: string, mes: string) => {
-    const mesano = `${ano}-0${mes}`;
+  const handleDespesasMes = async (ano: string, mes: any) => {
+    mes > 9 ? (mes = `${mes}`) : (mes = `0${mes}`);
+
+    const mesano = `${ano}-${mes}`;
     const despesas = await getDespesasMes(mesano);
     setDespesasMes(despesas);
     handleDespesasTotal();
@@ -71,46 +55,11 @@ export function Despesas() {
   }, [handleDespesasMes]);
 
   return (
-    <>
+    <Container>
       <Box display="flex" flexDirection="column">
         <Box display="flex" flexDirection="row" justifyContent="space-between">
           <Box>
-            <FormControl margin="normal">
-              <Box>
-                <InputLabel id="select-ano">Ano</InputLabel>
-                <NativeSelect
-                  id="select-ano"
-                  value={selectedAno}
-                  onChange={(e) => toggleAno(e)}
-                >
-                  {listAno.map((a) => {
-                    return (
-                      <option key={a.id} value={a.ano}>
-                        {a.ano}
-                      </option>
-                    );
-                  })}
-                </NativeSelect>
-              </Box>
-            </FormControl>
-            <FormControl margin="normal">
-              <Box>
-                <InputLabel id="select-mes">Mes</InputLabel>
-                <NativeSelect
-                  id="select-mes"
-                  value={selectedMes}
-                  onChange={(e) => toggleMes(e)}
-                >
-                  {listMes.map((m) => {
-                    return (
-                      <option key={m.id} value={m.id}>
-                        {m.mes}
-                      </option>
-                    );
-                  })}
-                </NativeSelect>
-              </Box>
-            </FormControl>
+            <SelectedAnoMes anoMes={anoMes} toggleMes={toggleMes} />
           </Box>
           <Box alignSelf="center">
             <span>Despesas total: {formatNumbers(despesaTotal)}</span>
@@ -120,6 +69,6 @@ export function Despesas() {
           <TableDespesas despesas={despesasMes} />
         </Box>
       </Box>
-    </>
+    </Container>
   );
 }

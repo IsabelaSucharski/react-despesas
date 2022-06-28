@@ -10,7 +10,7 @@ function App() {
   return (
     <Router>
       <Switch>
-        <Route path="/despesas/:mes">
+        <Route path="/despesas/:anoMes">
           <Despesas />;
         </Route>
         <Redirect to={{ pathname: "/despesas/2021-03" }} />
